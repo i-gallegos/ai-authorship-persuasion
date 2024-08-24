@@ -1,0 +1,1 @@
+Repository for "AI-Generated Content and Public Persuasion: The Limited Effect of AI Authorship Labels"
