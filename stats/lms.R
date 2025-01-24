@@ -57,13 +57,20 @@ topic1 <- lm(post_support ~ pre_support + ai_condition + nolabel_condition, data
 topic2 <- lm(post_support ~ pre_support + ai_condition + nolabel_condition, data=d[which(d$topic=="2"),])
 topic3 <- lm(post_support ~ pre_support + ai_condition + nolabel_condition, data=d[which(d$topic=="3"),])
 topic4 <- lm(post_support ~ pre_support + ai_condition + nolabel_condition, data=d[which(d$topic=="4"),])
-
+summary(model1)
+summary(model1_confidence)
+summary(model1_sharing)
+summary(model1_accuracy)
 
 # Model 2
 model2 <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d)
 model2_confidence <- lm(post_confidence ~ pre_confidence + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d)
 model2_sharing <- lm(post_sharing ~ ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d)
 model2_accuracy <- lm(post_accuracy ~  ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d)
+summary(model2)
+summary(model2_confidence)
+summary(model2_sharing)
+summary(model2_accuracy)
 
 
 # Interaction with political party
