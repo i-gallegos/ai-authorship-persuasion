@@ -1,1 +1,1 @@
-Repository for "AI-Generated Content and Public Persuasion: The Limited Effect of AI Authorship Labels"
+Repository for "Labeling Messages as AI-Generated Does Not Reduce Their Persuasive Effects"

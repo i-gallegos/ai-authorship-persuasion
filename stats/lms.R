@@ -48,7 +48,9 @@ extract_model_info <- function(model) {
 }
 
 
-# Model 1
+###
+### Model 1: AI v. Human ###
+###
 model1 <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d)
 model1_confidence <- lm(post_confidence ~ pre_confidence + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d)
 model1_sharing <- lm(post_sharing ~ ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d)
@@ -62,7 +64,10 @@ summary(model1_confidence)
 summary(model1_sharing)
 summary(model1_accuracy)
 
-# Model 2
+
+###
+### Model 2: AI v. No Label ###
+###
 model2 <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d)
 model2_confidence <- lm(post_confidence ~ pre_confidence + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d)
 model2_sharing <- lm(post_sharing ~ ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d)
@@ -72,19 +77,49 @@ summary(model2_confidence)
 summary(model2_sharing)
 summary(model2_accuracy)
 
-
-# Interaction with political party
+###
+### Interaction with political party ###
+###
 d$democrat <- ifelse(d$PARTY=="Democrat",1,0)
 d$republican <- ifelse(d$PARTY=="Republican",1,0)
 d$independent <- ifelse(d$PARTY=="Independent",1,0)
-model_party <- lm(post_support ~ pre_support + 
+model1_party <- lm(post_support ~ pre_support + 
                     ai_condition*democrat + ai_condition*republican + ai_condition*independent + 
                     nolabel_condition*democrat + nolabel_condition*republican + nolabel_condition*independent + 
                     topic_2 + topic_3 + topic_4, 
                   data=d)
+model2_party <- lm(post_support ~ pre_support + 
+                     ai_condition*democrat + ai_condition*republican + ai_condition*independent + 
+                     human_condition*democrat + human_condition*republican + human_condition*independent + 
+                     topic_2 + topic_3 + topic_4, 
+                   data=d)
+summary(model1_party)
+summary(model2_party)
+
+# Subgroups
+d_democrat <- subset(d, PARTY=="Democrat")
+d_republican <- subset(d, PARTY=="Republican")
+d_independent <- subset(d, PARTY=="Independent")
+
+model1_democrat <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4,data=d_democrat)
+model1_republican <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_republican)
+model1_independent <- lm(post_support ~ pre_support +  ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_independent)
+
+model2_democrat <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_democrat)
+model2_republican <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_republican)
+model2_independent <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_independent)
+
+summary(model1_democrat)
+summary(model1_republican)
+summary(model1_independent)
+summary(model2_democrat)
+summary(model2_republican)
+summary(model2_independent)
 
 
-# Interaction with prior knowledge
+###
+### Interaction with prior knowledge ###
+####
 ordered_levels_knowledge <- c(
   'I have little to no knowledge about this topic.',
   'I am slightly knowledgeable about this topic.',
@@ -94,14 +129,42 @@ ordered_levels_knowledge <- c(
 )
 d$pre_knowledge_num <- match(d$pre_knowledge, ordered_levels_knowledge) - 1
 d$pre_knowledge_continuous <- d$pre_knowledge_num / (length(ordered_levels_knowledge) - 1)
-model_knowledge <- lm(post_support ~ pre_support + 
+model1_knowledge <- lm(post_support ~ pre_support + 
                         ai_condition*pre_knowledge_continuous + 
                         nolabel_condition*pre_knowledge_continuous + 
                         topic_2 + topic_3 + topic_4, 
                       data=d)
+model2_knowledge <- lm(post_support ~ pre_support + 
+                        ai_condition*pre_knowledge_continuous + 
+                        human_condition*pre_knowledge_continuous + 
+                        topic_2 + topic_3 + topic_4, 
+                      data=d)
+summary(model1_knowledge)
+summary(model2_knowledge)
 
+# Subgroups
+d_low_knowledge <- subset(d, pre_knowledge %in% c("I have little to no knowledge about this topic.", "I am slightly knowledgeable about this topic."))
+d_moderate_knowledge <- subset(d, pre_knowledge == "I am moderately knowledgeable about this topic.")
+d_high_knowledge <- subset(d, pre_knowledge %in% c("I am very knowledgeable about this topic.", "I am an expert on this topic."))
 
-# Interaction with prior experience
+model1_low_know <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_low_knowledge)
+model1_moderate_know <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_moderate_knowledge)
+model1_high_know <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_high_knowledge)
+
+model2_low_know <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_low_knowledge)
+model2_moderate_know <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_moderate_knowledge)
+model2_high_know <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_high_knowledge)
+
+summary(model1_low_know)
+summary(model1_moderate_know)
+summary(model1_high_know)
+summary(model2_low_know)
+summary(model2_moderate_know)
+summary(model2_high_know)
+
+###
+### Interaction with prior experience ###
+###
 ordered_levels_experience <- c(
   'I have never heard of conversational AI or LLMs.',
   'I never use conversational AI or LLMs.',
@@ -112,14 +175,38 @@ ordered_levels_experience <- c(
 )
 d$prior_experience_num <- match(d$EXPERIENCE, ordered_levels_experience) - 1
 d$prior_experience_continuous <- d$prior_experience_num / (length(ordered_levels_experience) - 1)
-model_experience <- lm(post_support ~ pre_support + 
+model1_experience <- lm(post_support ~ pre_support + 
                          ai_condition*prior_experience_continuous + 
                          nolabel_condition*prior_experience_continuous + 
                          topic_2 + topic_3 + topic_4, 
                        data=d)
+model2_experience <- lm(post_support ~ pre_support + 
+                         ai_condition*prior_experience_continuous + 
+                         human_condition*prior_experience_continuous + 
+                         topic_2 + topic_3 + topic_4, 
+                       data=d)
+summary(model1_experience)
+summary(model2_experience)
+
+# Subgroups
+d_low_experience <- subset(d, EXPERIENCE %in% c("I have never heard of conversational AI or LLMs.", "I never use conversational AI or LLMs.", "I use conversational AI or LLMs less than once a month."))
+d_high_experience <- subset(d, EXPERIENCE %in% c("I use conversational AI or LLMs about once a month.", "I use conversational AI or LLMs about once a week.", "I use conversational AI or LLMs more than once a week."))
+
+model1_low_exp <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_low_experience)
+model1_high_exp <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_high_experience)
+
+model2_low_exp <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_low_experience)
+model2_high_exp <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_high_experience)
+
+summary(model1_low_exp)
+summary(model1_high_exp)
+summary(model2_low_exp)
+summary(model2_high_exp)
 
 
-# Interaction with education level
+###
+### Interaction with education level ###
+###
 ordered_levels_education <- c(
   "Did not receive high school diploma",
   "High school graduate",
@@ -132,22 +219,68 @@ ordered_levels_education <- c(
 )
 d$education_num <- match(d$EDUC, ordered_levels_education) - 1
 d$education_continuous <- d$education_num / (length(ordered_levels_education) - 1)
-model_education <- lm(post_support ~ pre_support + 
+model1_education <- lm(post_support ~ pre_support + 
                         ai_condition*education_continuous + 
                         nolabel_condition*education_continuous + 
                         topic_2 + topic_3 + topic_4, 
                       data=d)
+model2_education <- lm(post_support ~ pre_support + 
+                        ai_condition*education_continuous + 
+                         human_condition*education_continuous + 
+                        topic_2 + topic_3 + topic_4, 
+                      data=d)
+summary(model1_education)
+summary(model2_education)
 
+# Subgroups
+d_low_educ <- subset(d, EDUC %in% c("Did not receive high school diploma", "High school graduate", "GED or equivalent", "Some college", "2-year degree (e.g., associate degree)"))
+d_high_educ <- subset(d, EDUC %in% c("Bachelor degree", "Master's degree", "Professional or academic doctorate degree"))
 
-# Interaction with age
-model_age <- lm(post_support ~ pre_support + 
+model1_low_educ <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_low_educ)
+model1_high_educ <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_high_educ)
+
+model2_low_educ <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_low_educ)
+model2_high_educ <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_high_educ)
+
+summary(model1_low_educ)
+summary(model1_high_educ)
+summary(model2_low_educ)
+summary(model2_high_educ)
+
+###
+#### Interaction with age ###
+###
+model1_age <- lm(post_support ~ pre_support + 
                   ai_condition*Age + 
                   nolabel_condition*Age + 
                   topic_2 + topic_3 + topic_4, 
                 data=d)
+model2_age <- lm(post_support ~ pre_support + 
+                  ai_condition*Age + 
+                   human_condition*Age + 
+                  topic_2 + topic_3 + topic_4, 
+                data=d)
+summary(model1_age)
+summary(model2_age)
 
+# Subgroups
+d_below_median_age <- subset(d, Age < 38)
+d_above_median_age <- subset(d, Age >= 38)
 
-# Extract and combine the data for all models
+model1_below_median_age <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_below_median_age)
+model1_above_median_age <- lm(post_support ~ pre_support + ai_condition + nolabel_condition + topic_2 + topic_3 + topic_4, data=d_above_median_age)
+
+model2_below_median_age <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_below_median_age)
+model2_above_median_age <- lm(post_support ~ pre_support + ai_condition + human_condition + topic_2 + topic_3 + topic_4, data=d_above_median_age)
+
+summary(model1_below_median_age)
+summary(model1_above_median_age)
+summary(model2_below_median_age)
+summary(model2_above_median_age)
+
+### 
+### Extract and combine the data for all models ###
+###
 model1_info <- extract_model_info(model1)
 model1_confidence_info <- extract_model_info(model1_confidence)
 model1_sharing_info <- extract_model_info(model1_sharing)
@@ -163,12 +296,51 @@ model2_confidence_info <- extract_model_info(model2_confidence)
 model2_sharing_info <- extract_model_info(model2_sharing)
 model2_accuracy_info <- extract_model_info(model2_accuracy)
 
-model_party_info <- extract_model_info(model_party)
-model_knowledge_info <- extract_model_info(model_knowledge)
-model_experience_info <- extract_model_info(model_experience)
-model_education_info <- extract_model_info(model_education)
-model_age_info <- extract_model_info(model_age)
+model1_party_info <- extract_model_info(model1_party)
+model1_knowledge_info <- extract_model_info(model1_knowledge)
+model1_experience_info <- extract_model_info(model1_experience)
+model1_education_info <- extract_model_info(model1_education)
+model1_age_info <- extract_model_info(model1_age)
 
+model2_party_info <- extract_model_info(model2_party)
+model2_knowledge_info <- extract_model_info(model2_knowledge)
+model2_experience_info <- extract_model_info(model2_experience)
+model2_education_info <- extract_model_info(model2_education)
+model2_age_info <- extract_model_info(model2_age)
+
+model1_democrat_info <- extract_model_info(model1_democrat)
+model1_republican_info <- extract_model_info(model1_republican)
+model1_independent_info <- extract_model_info(model1_independent)
+
+model2_democrat_info <- extract_model_info(model2_democrat)
+model2_republican_info <- extract_model_info(model2_republican)
+model2_independent_info <- extract_model_info(model2_independent)
+
+model1_low_know_info <- extract_model_info(model1_low_know)
+model1_moderate_know_info <- extract_model_info(model1_moderate_know)
+model1_high_know_info <- extract_model_info(model1_high_know)
+
+model2_low_know_info <- extract_model_info(model2_low_know)
+model2_moderate_know_info <- extract_model_info(model2_moderate_know)
+model2_high_know_info <- extract_model_info(model2_high_know)
+
+model1_low_exp_info <- extract_model_info(model1_low_exp)
+model1_high_exp_info <- extract_model_info(model1_high_exp)
+
+model2_low_exp_info <- extract_model_info(model2_low_exp)
+model2_high_exp_info <- extract_model_info(model2_high_exp)
+
+model1_low_educ_info <- extract_model_info(model1_low_educ)
+model1_high_educ_info <- extract_model_info(model1_high_educ)
+
+model2_low_educ_info <- extract_model_info(model2_low_educ)
+model2_high_educ_info <- extract_model_info(model2_high_educ)
+
+model1_below_median_age_info <- extract_model_info(model1_below_median_age)
+model1_above_median_age_info <- extract_model_info(model1_above_median_age)
+
+model2_below_median_age_info <- extract_model_info(model2_below_median_age)
+model2_above_median_age_info <- extract_model_info(model2_above_median_age)
 
 # Add model names to the extracted data
 model1_info$Model <- "Model 1"
@@ -186,12 +358,51 @@ model2_confidence_info$Model <- "Model 2 Confidence"
 model2_sharing_info$Model <- "Model 2 Sharing"
 model2_accuracy_info$Model <- "Model 2 Accuracy"
 
-model_party_info$Model <- "Model Party"
-model_knowledge_info$Model <- "Model Knowledge"
-model_experience_info$Model <- "Model Experience"
-model_education_info$Model <- "Model Education"
-model_age_info$Model <- "Model Age"
+model1_party_info$Model <- "Model 1 Party"
+model1_knowledge_info$Model <- "Model 1 Knowledge"
+model1_experience_info$Model <- "Model 1 Experience"
+model1_education_info$Model <- "Model 1 Education"
+model1_age_info$Model <- "Model 1 Age"
 
+model2_party_info$Model <- "Model 2 Party"
+model2_knowledge_info$Model <- "Model 2 Knowledge"
+model2_experience_info$Model <- "Model 2 Experience"
+model2_education_info$Model <- "Model 2 Education"
+model2_age_info$Model <- "Model 2 Age"
+
+model1_democrat_info$Model <- "Model 1 Democrat"
+model1_republican_info$Model <- "Model 1 Republican"
+model1_independent_info$Model <- "Model 1 Independent"
+
+model2_democrat_info$Model <- "Model 2 Democrat"
+model2_republican_info$Model <- "Model 2 Republican"
+model2_independent_info$Model <- "Model 2 Independent"
+
+model1_low_know_info$Model <- "Model 1 Low Knowledge"
+model1_moderate_know_info$Model <- "Model 1 Moderate Knowledge"
+model1_high_know_info$Model <- "Model 1 High Knowledge"
+
+model2_low_know_info$Model <- "Model 2 Low Knowledge"
+model2_moderate_know_info$Model <- "Model 2 Moderate Knowledge"
+model2_high_know_info$Model <- "Model 2 High Knowledge"
+
+model1_low_exp_info$Model <- "Model 1 Low Experience"
+model1_high_exp_info$Model <- "Model 1 High Experience"
+
+model2_low_exp_info$Model <- "Model 2 Low Experience"
+model2_high_exp_info$Model <- "Model 2 High Experience"
+
+model1_low_educ_info$Model <- "Model 1 Low Education"
+model1_high_educ_info$Model <- "Model 1 High Education"
+
+model2_low_educ_info$Model <- "Model 2 Low Education"
+model2_high_educ_info$Model <- "Model 2 High Education"
+
+model1_below_median_age_info$Model <- "Model 1 Below Median Age"
+model1_above_median_age_info$Model <- "Model 1 Above Median Age"
+
+model2_below_median_age_info$Model <- "Model 2 Below Median Age"
+model2_above_median_age_info$Model <- "Model 2 Above Median Age"
 
 # Combine all extracted information
 combined_info <- rbind(
@@ -207,13 +418,44 @@ combined_info <- rbind(
   model2_confidence_info,
   model2_sharing_info,
   model2_accuracy_info,
-  model_party_info, 
-  model_knowledge_info, 
-  model_experience_info, 
-  model_education_info, 
-  model_age_info
+  model1_party_info, 
+  model1_knowledge_info, 
+  model1_experience_info, 
+  model1_education_info, 
+  model1_age_info,
+  model2_party_info, 
+  model2_knowledge_info, 
+  model2_experience_info, 
+  model2_education_info, 
+  model2_age_info,
+  model1_democrat_info, 
+  model1_republican_info, 
+  model1_independent_info, 
+  model2_democrat_info, 
+  model2_republican_info, 
+  model2_independent_info,
+  model1_low_know_info, 
+  model1_moderate_know_info, 
+  model1_high_know_info,
+  model2_low_know_info, 
+  model2_moderate_know_info, 
+  model2_high_know_info,
+  model1_low_exp_info, 
+  model1_high_exp_info,
+  model2_low_exp_info, 
+  model2_high_exp_info,
+  model1_low_educ_info, 
+  model1_high_educ_info,
+  model2_low_educ_info, 
+  model2_high_educ_info,
+  model1_below_median_age_info,
+  model1_above_median_age_info,
+  model2_below_median_age_info,
+  model2_above_median_age_info
 )
 
+
+# Format for Latex
 combined_info <- cbind(Variable = rownames(combined_info), combined_info)
 rownames(combined_info) <- paste(combined_info$Model, combined_info$Variable, sep = "_")
 combined_info$Model <- NULL
@@ -222,15 +464,32 @@ combined_info_rounded <- combined_info
 numeric_columns <- sapply(combined_info_rounded, is.numeric)
 combined_info_rounded[numeric_columns] <- lapply(combined_info_rounded[numeric_columns], signif, digits = 1)
 
-table_latex <- kable(
-  combined_info_rounded, 
-  format = "latex", 
-  booktabs = TRUE, 
-  caption = "Model Comparison"
-) %>%
-  kable_styling(latex_options = c("hold_position"))
+combined_info_no_topics <- combined_info_rounded[!grepl("topic", combined_info_rounded$Variable), ]
 
 
-# Save the LaTeX table to a .tex file
-cat(table_latex, file = "../results/lms.tex")
+modify_text <- function(x) {
+  modified_text <- gsub("_.*", "", x) 
+  modified_text <- gsub("_", " ", modified_text)
+  return(modified_text)
+}
+
+create_latex_table <- function(data) {
+  data$Variable <- sapply(data$Variable, modify_text)
+  
+  # Initialize the LaTeX table with kable
+  table_latex <- kable(data, format = "latex", booktabs = TRUE, caption = "Model Comparison") %>%
+    kable_styling(latex_options = c("hold_position"))
+  
+  for (model in models) {
+    model_rows <- grep(model, rownames(data))
+    if (length(model_rows) > 0) {
+      table_latex <- gsub(paste0("\\\\", model), paste0("\\\\hline \n", model), table_latex)
+    }
+  }
+  
+  return(table_latex)
+}
+
+table_latex <- create_latex_table(combined_info_no_topics)
+cat(table_latex, file = "../results/lms_new2.tex")
 
