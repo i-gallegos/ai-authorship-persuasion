@@ -278,6 +278,14 @@ summary(model1_above_median_age)
 summary(model2_below_median_age)
 summary(model2_above_median_age)
 
+# GAM Model
+gam_model <- gam(post_support ~ pre_support + s(Age, by=ai_condition) + s(Age, by=nolabel_condition) + topic_2 + topic_3 + topic_4, data=d)
+summary(gam_model)
+png("age_gam.png", width = 7, height = 5, units = "in", res=300)
+plot(gam_model, select = 1, se = TRUE, shade = TRUE,
+     main = "", ylab = "Effect of Age on Change in Support (AI Label)")
+dev.off()
+
 ### 
 ### Extract and combine the data for all models ###
 ###

@@ -52,11 +52,11 @@ def clean_controls(df):
 
     df_copy = df.copy()
     df_copy['LLM_HUMAN_2'] = df_copy['LLM_HUMAN_2'].replace({
-        'Definitely human-written':1,
-        'Possibly human-written':2, 
-        'Not sure':3, 
-        'Possibly AI-generated':4,
-        'Definitely AI-generated':5, 
+        'Definitely human-written':'HUM',
+        'Possibly human-written':'HUM', 
+        'Not sure':'na', 
+        'Possibly AI-generated':'LLM',        
+        'Definitely AI-generated':'LLM', 
     })
 
     passed_manip = ((df_copy['condition']=='NONE') | (df_copy['LLM_HUMAN_2']==df_copy['condition']) | (df_copy['LLM_HUMAN_3']=='No')).rename('passed_manip')
